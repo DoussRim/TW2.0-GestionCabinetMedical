@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from User.models import User, Patient, Medecin, Specialite
+from User.models import User, Patient, Doctor, Specialty
 
 
 @admin.register(User)
@@ -30,7 +30,7 @@ class PatientAdmin(UserAdmin):
     readonly_fields = ()   # voir la remarque sur la clé primaire ci-dessous
 
 
-@admin.register(Medecin)
+@admin.register(Doctor)
 class MedecinAdmin(UserAdmin):
     add_fieldsets = CustomUserAdmin.add_fieldsets + (
         ("Profil médecin", {"classes": ("wide",), "fields": ("matricule_ordre", "telephone", "specialites")}),
@@ -41,4 +41,4 @@ class MedecinAdmin(UserAdmin):
     filter_horizontal = ("specialites",)
 
 
-admin.site.register(Specialite)
+admin.site.register(Specialty)

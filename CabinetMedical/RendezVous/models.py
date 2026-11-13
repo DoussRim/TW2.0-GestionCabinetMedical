@@ -1,62 +1,70 @@
-from django.db import models
-
-# Create your models here.
+# AppointmentApp/models.py
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
+from django.db import models
 from django.utils import timezone
-from User.models import Medecin
-from User.models import Patient
+from User.models import Doctor,Patient
 
+class Appointment(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "En attente"
+        CONFIRMED = "CONFIRMED", "Confirmé"
+        CANCELLED = "CANCELLED", "Annulé"
 
-class RendezVous(models.Model):
-    class Statut(models.TextChoices):
-        EN_ATTENTE = "EN_ATTENTE", "En attente"
-        CONFIRME = "CONFIRME", "Confirmé"
-        ANNULE = "ANNULE", "Annulé"
-
-    medecin = models.ForeignKey(
-        Medecin, on_delete=models.CASCADE, related_name="rendezvous"
+    # Deux relations one-to-many indépendantes (pas de ManyToMany, pas de through)
+    doctor = models.ForeignKey(
+        Doctor,
+        on_delete=models.CASCADE,
+        related_name="appointments",
+        verbose_name="praticien",
     )
-
     patient = models.ForeignKey(
-        Patient, on_delete=models.CASCADE, related_name="rendezvous"
+        Patient,
+        on_delete=models.CASCADE,
+        related_name="appointments",
+        verbose_name="demandeur",
     )
 
-    motif = models.TextField()
+    appointment_date = models.DateTimeField("date et heure du rendez-vous")
+    duration_minutes = models.PositiveIntegerField("durée (minutes)", default=30)
+    reason = models.TextField("motif")
+    status = models.CharField(
+        "statut", max_length=10, choices=Status.choices, default=Status.PENDING
+    )
 
-    ordonnance = models.FileField(
-        upload_to="ordonnances/",
-        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+    # Ordonnance scannée, déposée par le médecin après la consultation
+    prescription = models.FileField(
+        "ordonnance",
+        upload_to="prescriptions/",
         blank=True,
-        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
     )
 
-    statut = models.CharField(
-        max_length=20, choices=Statut.choices, default=Statut.EN_ATTENTE
-    )
-
-    duree_minutes = models.PositiveIntegerField(default=30)
-
-    date_rdv = models.DateTimeField()
-
-    date_creation = models.DateTimeField(auto_now_add=True)
-
-    date_maj = models.DateTimeField(auto_now=True)
-
-    def clean(self):
-        if self.date_rdv <= timezone.now():
-            raise ValidationError(
-                {
-                    "date_rdv": "La date du rendez-vous doit être postérieure à la date et à l’heure actuelles."
-                }
-            )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("medecin", "date_rdv")
+        ordering = ["appointment_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["doctor", "appointment_date"],
+                name="unique_doctor_appointment_date",
+                violation_error_message="Ce médecin a déjà un rendez-vous à cette date et heure.",
+            )
+        ]
 
     def __str__(self):
-        return (
-            f"{self.patient} - "
-            f"{self.medecin} - "
-            f"{self.date_rdv.strftime('%d/%m/%Y %H:%M')}"
+        return f"{self.patient} → {self.doctor} le {self.appointment_date:%d/%m/%Y %H:%M}"
+
+    def clean(self):
+        # La règle s'applique à la création ou si la date a été modifiée.
+        # Un rendez-vous passé reste modifiable (ex. ajout de l'ordonnance).
+        date_changed = self._state.adding or (
+            not Appointment.objects.filter(
+                pk=self.pk, appointment_date=self.appointment_date
+            ).exists()
         )
+        if date_changed and self.appointment_date <= timezone.now():
+            raise ValidationError(
+                {"appointment_date": "Le rendez-vous doit être postérieur à la date et l'heure actuelles."}
+            )
