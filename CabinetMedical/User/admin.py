@@ -7,61 +7,6 @@ from .models import User
 from RendezVous.models import Appointment
 from RendezVous.admin import AppointmentInline#Q2.4
 
-###############Partie III de l'atelier III. Application Back-Office
-# class RendezVousInline(admin.TabularInline):
-#     model = Appointment
-#     extra = 0
-
-
-# @admin.register(User)
-# class PatientAdmin(admin.ModelAdmin):
-#     search_fields = ["nom", "prenom", "cin"]
-#     inlines = [RendezVousInline]
-
-#################Cette partie est utile pour la partie gestion User
-######## A fin de permettre Le login avec les comptes Utilisateur
-######## Ajouté à partie de l'interface Admin
-# @admin.register(User)
-# class CustomUserAdmin(UserAdmin):
-#     # Formulaire d'AJOUT : username + mots de passe (chiffrés) + champs supplémentaires
-#     add_fieldsets = (
-#         (None, {
-#             "classes": ("wide",),
-#             "fields": ("username", "usable_password", "password1", "password2"),
-#         }),
-#         ("Informations personnelles", {
-#             "classes": ("wide",),
-#             "fields": ("email", "first_name", "last_name"),
-#         }),
-#     )
-
-
-# @admin.register(Patient)
-# class PatientAdmin(UserAdmin):
-#     add_fieldsets = CustomUserAdmin.add_fieldsets + (
-#         ("Profil patient", {"classes": ("wide",), "fields": ("cin", "telephone", "date_naissance")}),
-#     )
-#     # Formulaire de MODIFICATION : les champs de UserAdmin + ceux du profil
-#     fieldsets = UserAdmin.fieldsets + (
-#         ("Profil patient", {"fields": ("cin", "telephone", "date_naissance")}),
-#     )
-#     readonly_fields = ()   # voir la remarque sur la clé primaire ci-dessous
-
-
-# @admin.register(Doctor)
-# class MedecinAdmin(UserAdmin):
-#     add_fieldsets = CustomUserAdmin.add_fieldsets + (
-#         ("Profil médecin", {"classes": ("wide",), "fields": ("matricule_ordre", "telephone", "specialites")}),
-#     )
-#     fieldsets = UserAdmin.fieldsets + (
-#         ("Profil médecin", {"fields": ("matricule_ordre", "telephone", "specialites")}),
-#     )
-#     filter_horizontal = ("specialites",)
-
-####Question 2.1#################
-# class PatientAdmin(UserAdmin):
-#     pass
-# admin.site.register(Patient, PatientAdmin)
 ####Question 2.2#################
 class PatientCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
