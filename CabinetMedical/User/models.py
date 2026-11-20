@@ -85,7 +85,7 @@ class Patient(User):
             )'''
     ################################################""
     def __str__(self):
-        return f"{self.get_full_name() or self.username} (CIN {self.cin})"
+        return f"{self.get_full_name() or self.username} (CIN {self.national_id})"
     class Meta:
             verbose_name = "Patient"
             verbose_name_plural = "Patients"
@@ -113,7 +113,7 @@ class Doctor(User):
 
 
     def __str__(self):
-        return f"Dr {self.get_full_name() or self.username} ({self.matricule_ordre})"
+        return f"Dr {self.get_full_name() or self.username} ({self.license_number})"
     #A ajouter lors de la manipulation de l'admin
     class Meta:
         verbose_name = "Doctor"

@@ -52,9 +52,10 @@ class Appointment(models.Model):
                 violation_error_message="Ce médecin a déjà un rendez-vous à cette date et heure.",
             )
         ]
-
+    ###Question 3.4.1
     def __str__(self):
-        return f"{self.patient} → {self.doctor} le {self.appointment_date:%d/%m/%Y %H:%M}"
+        when = timezone.localtime(self.appointment_date)#décalage fuseau horaire
+        return f"{self.patient} → {self.doctor} le {when:%d/%m/%Y %H:%M}"
 
     def clean(self):
         # La règle s'applique à la création ou si la date a été modifiée.
